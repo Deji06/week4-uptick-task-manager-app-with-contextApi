@@ -1,0 +1,27 @@
+// {
+//     "compilerOptions": {
+//         "target": "es6",
+//         "module": "esnext",
+//         "jsx": "react",
+//         "moduleResolution": "node",
+//         "esModuleInterop": true,
+//         "strict": true,
+//         "skipLibCheck": true,
+//         "outDir": "./dist",
+//         "rootDir": "./src",
+//         "baseUrl": "src",
+//         "allowSyntheticDefaultImports": true
+//     },
+//     "include": ["src/**/*"],
+//     "exclude": ["node_modules", "dist"]
+// }
+
+
+
+{
+  "files": [],
+  "references": [
+    { "path": "./tsconfig.app.json" },
+    { "path": "./tsconfig.node.json" }
+  ]
+}
