@@ -1,12 +1,8 @@
 import axios from "axios";
 import { createContext, useState, type ReactNode, useCallback } from "react";
-// import SignUp from "../components/SignUp";
 
 interface AuthContextType {
   username: string;
-//   token:string;
-//   email: string;
-//   password: string;
   loading: boolean;
   error: string | null;
   setUserName: (username: string) => void;
