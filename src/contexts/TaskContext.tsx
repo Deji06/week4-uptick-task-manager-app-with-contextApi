@@ -10,11 +10,16 @@ interface TaskTypes {
     // count: number;
 }
 
+type FilterOption =  "all" | "completed" | "incomplete"
+
+
 interface TaskState {
     tasks: TaskTypes[];
     loading: boolean;
     error: string | null
     count: number;
+    filterState: FilterOption;
+    filteredTasks: TaskTypes[];
 }
 
 // shape of value that will be passed to component
@@ -24,18 +29,21 @@ interface TaskContextTypes {
     createTask: (content:string) => Promise<void>
     updateTask:(content: string, id: string) => Promise<void>;
     deleteTask:(id:string) => Promise<void>
-
+    setFilterState:(filter: FilterOption) => void
 }
+
 export const TaskContext = createContext<TaskContextTypes|undefined>(undefined)
 
-//where states are being stored
+//where states are being stored that will be manipulated in the components
 export const TaskProvider = ({children}:{children:ReactNode}) => {
     const[tasks, setTasks] = useState<TaskTypes[]>([])
+    const[filteredTasks, setFilteredTasks] = useState<TaskTypes[]>([])
+    const[filterState, setFilterState] = useState<FilterOption>('all')
     const [loading, setLoading] = useState<boolean>(false)
     const [error, setError] = useState<string | null>(null)
     const[count , setCount] = useState<number>(0)
     //combined states structure 
-    const state:TaskState  = {tasks, loading, error, count}
+    const state:TaskState  = {tasks, loading, error, count, filteredTasks, filterState}
 
     const fetchAllTasks = useCallback(async() => {
         setLoading(true)
@@ -172,14 +180,39 @@ export const TaskProvider = ({children}:{children:ReactNode}) => {
         console.error(error);
         const errorMessage = error.response?.status === '404' ? 'task not found':
         error.response.data.msg || 'failed to delete task'
-        setError(errorMessage) 
+        setError(errorMessage)   
     } finally {
         setLoading(false)
     }
     }, [])
 
+    useEffect(() => {
+        let  newFilteredTasks: TaskTypes[] = []
+        if (filterState === 'all') {
+        newFilteredTasks = tasks;
+    } else if (filterState === 'completed') {
+        newFilteredTasks = tasks.filter(task => task.completed);
+    } else { // Incomplete
+        newFilteredTasks = tasks.filter(task => !task.completed);
+    }
 
-    return <TaskContext.Provider value={{fetchAllTasks, createTask, updateTask, deleteTask, state}}>
+    setFilteredTasks(newFilteredTasks);
+
+
+    }, [tasks, filterState])
+
+        // const filterTaskFunction  = (all:string) => {
+        //     if(taskFiltering === "all") {
+        //         setTaskFiltering('all')
+        //     } else if (taskFiltering === 'incomplete'){
+        //         setTaskFiltering('incomplete')
+        //     }
+        //     else {
+        //         setTaskFiltering('completed')
+        //     }
+        // }
+
+    return <TaskContext.Provider value={{fetchAllTasks, createTask, updateTask, deleteTask, state, setFilterState }}>
         {children}
     </TaskContext.Provider>
 }
