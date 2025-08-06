@@ -3,6 +3,8 @@ import { UseTaskContext } from "../contexts/TaskContext";
 import AddTodoForm from "./AddTodoForm";
 import { CiEdit } from "react-icons/ci";
 import { MdDeleteOutline } from "react-icons/md";
+import { useNavigate } from "react-router-dom";
+
 // import { useAuthContext } from '../hooks/authContextHook'
 
 interface TaskTypes {
@@ -13,12 +15,14 @@ interface TaskTypes {
 }
 
 export const TaskDashboard = () => {
+  const navigate = useNavigate()
   const [displayTodoForm, setDisplayTodoForm] = useState<boolean>(true);
   const [displayEditForm, setDisplayEditForm] = useState<boolean>(false);
   const [edit, setEdit] = useState<string>("");
   const [currentTask, setCurrentTask] = useState<TaskTypes | null>(null);
+  // const[isChecked, setIsChecked] = useState(false)
 
-  const { updateTask, deleteTask, state: { error, loading, tasks, count, filterState, filteredTasks}, setFilterState } = UseTaskContext();
+  const { updateTask, deleteTask, state: { error, loading, tasks, count, filterState, filteredTasks}, checkTaskBox, setFilterState , logOut} = UseTaskContext();
   //    const {username} = useAuthContext()
 
   const handleEdit = (task: TaskTypes) => {
@@ -49,9 +53,26 @@ export const TaskDashboard = () => {
     setFilterState(e.target.value as 'all' | "incomplete" | 'completed')
   }
 
+  const handleCheck = async(id:string) => {
+       await checkTaskBox(id)
+      //  setIsChecked(!isChecked)
+  }
+
+  const handleLogOut = () => {
+    logOut()
+    navigate('/login')
+  }
+
   return (
     <div className="pb-10">
-      <p className="text-red-900 uppercase text-center mt-10 font-bold text-[30px] ">
+      <button
+        className="text-white  w-[100px] bg-red-900 px-5 py-2 capitalize rounded cursor-pointer mt-3 ml-5"
+        onClick={handleLogOut}
+        >
+          log out
+        </button>
+
+      <p className="text-red-900 uppercase text-center mt-5 font-bold text-[30px] ">
         Task manager
       </p>
       {error && <p className="text-[20px] text-red-500">{error}</p>}
@@ -83,7 +104,7 @@ export const TaskDashboard = () => {
         ""
       )}
       {loading && (
-        <p className="text-red-900 text-center text-[20px]">
+        <p className="text-red-900 text-center text-[20px] capitalize">
           loading all tasks....
         </p>
       )}
@@ -97,8 +118,11 @@ export const TaskDashboard = () => {
             {filteredTasks.map((task) => (
               <div className="flex justify-between mt-2 pb-3">
                 <li key={task._id} className="flex gap-x-3">
-                  <input type="checkbox"  checked/>
-                  <p>{task.content}</p>
+                  <input type="checkbox" 
+                   checked={task.completed}
+                   onChange={() => handleCheck(task._id)}
+                   />
+                   <p className={task.completed ? "line-through": ''}>{task.content}</p>
                 </li>
                 <div className="flex gap-x-3 items-center">
                   <button

@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import { useAuthContext } from "../hooks/authContextHook";
 import { useNavigate } from "react-router-dom";
+import { UseTaskContext } from "../contexts/TaskContext";
 // type Props = {}
 
 const Login = () => {
   const navigate = useNavigate();
+  const {fetchAllTasks} = UseTaskContext()
   const { error, login, setError, loading, setLoading } = useAuthContext();
   const [formData, setFormData] = useState({ password: "", email: "" });
   const [userError, setUserError] = useState({ email: "", password: "" });
@@ -35,6 +37,7 @@ const Login = () => {
     try {
       await login(formData.email, formData.password);
       navigate('/TaskDashboard')
+      fetchAllTasks()
     } catch (error) {
       console.log(error);
     } finally {

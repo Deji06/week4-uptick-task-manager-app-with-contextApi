@@ -1,6 +1,5 @@
 import axios from "axios";
-import {useContext, createContext, type ReactNode, useState, useCallback, useEffect } from "react";
-
+import {useContext, createContext, type ReactNode, useState, useCallback, useEffect} from "react";
 // single task created data
 interface TaskTypes {
     _id: string;
@@ -30,6 +29,8 @@ interface TaskContextTypes {
     updateTask:(content: string, id: string) => Promise<void>;
     deleteTask:(id:string) => Promise<void>
     setFilterState:(filter: FilterOption) => void
+    checkTaskBox:(id:string) => Promise<void>
+    logOut:() => void
 }
 
 export const TaskContext = createContext<TaskContextTypes|undefined>(undefined)
@@ -44,6 +45,19 @@ export const TaskProvider = ({children}:{children:ReactNode}) => {
     const[count , setCount] = useState<number>(0)
     //combined states structure 
     const state:TaskState  = {tasks, loading, error, count, filteredTasks, filterState}
+
+    const logOut = useCallback(() => {
+        localStorage.removeItem('authToken')
+        console.log('token cleared');
+          setTasks([]);
+        setFilteredTasks([]);
+        setFilterState('all');
+        setLoading(false);
+        setError(null); 
+        setCount(0);
+        
+        
+    }, [])
 
     const fetchAllTasks = useCallback(async() => {
         setLoading(true)
@@ -79,7 +93,17 @@ export const TaskProvider = ({children}:{children:ReactNode}) => {
     },[])
 
      useEffect (()=> {
-        fetchAllTasks()
+          const token = localStorage.getItem('authToken');
+          if (token) {
+        fetchAllTasks();
+    } else {
+        setTasks([]);
+        setFilteredTasks([]);
+        setCount(0);
+        setError('Please log in to view tasks');
+        setLoading(false);
+    }
+        // fetchAllTasks()
        },[fetchAllTasks])
 
       const createTask = useCallback(async(content:string) => {
@@ -186,6 +210,35 @@ export const TaskProvider = ({children}:{children:ReactNode}) => {
     }
     }, [])
 
+    const checkTaskBox = useCallback(async (id:string) => {
+        try {
+            const taskToUpdate = tasks.find((task) => task._id === id )
+            if(!taskToUpdate) return ;
+            const URL = import.meta.env.VITE_SERVER_URL
+        const token = localStorage.getItem('authToken')
+        if(!token) {
+            setError('token missing, cannot update taskChecker')
+            setLoading(false)
+                return;
+        }
+        const body = {completed: !taskToUpdate.completed}
+        const config = {
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`
+            }
+        }
+        const response = await axios.patch(`${URL}/api/v1/task/${id}`, body, config)
+        console.log('taskchecker:', response);
+        
+        setTasks(prevTask => prevTask.map(task => task._id ===id ? response.data.updateTask : task ))
+        } catch (error:any) {
+            console.error(error);
+            setError('Failed to update task completion status.');
+            
+        }
+    }, [tasks])
+
     useEffect(() => {
         let  newFilteredTasks: TaskTypes[] = []
         if (filterState === 'all') {
@@ -212,7 +265,7 @@ export const TaskProvider = ({children}:{children:ReactNode}) => {
         //     }
         // }
 
-    return <TaskContext.Provider value={{fetchAllTasks, createTask, updateTask, deleteTask, state, setFilterState }}>
+    return <TaskContext.Provider value={{fetchAllTasks, createTask, updateTask, deleteTask, state, setFilterState , checkTaskBox, logOut}}>
         {children}
     </TaskContext.Provider>
 }
