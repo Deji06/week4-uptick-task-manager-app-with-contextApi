@@ -4,6 +4,7 @@ import AddTodoForm from "./AddTodoForm";
 import { CiEdit } from "react-icons/ci";
 import { MdDeleteOutline } from "react-icons/md";
 import { useNavigate } from "react-router-dom";
+import backGroundImage from '../assets/images/pexels-thepaintedsquare-3361492.jpg'
 
 // import { useAuthContext } from '../hooks/authContextHook'
 
@@ -34,15 +35,23 @@ export const TaskDashboard = () => {
 
   const handleEditForm = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (currentTask) {
-      await updateTask(edit, currentTask?._id);
-      console.log(`Updated task with new content: ${edit}`);
+    try {
+      if (currentTask) {
+        await updateTask(edit, currentTask?._id);
+        if(!error) {
+          console.log(`Updated task with new content: ${edit}`);
+          setCurrentTask(null);
+          setEdit("");
+          setDisplayEditForm(false);
+          console.log(edit);
+
+        }
+      }
+    } catch(error:any) {
+      console.error(error)
+      setDisplayTodoForm(true);
+      setDisplayEditForm(true)
     }
-    setCurrentTask(null);
-    setEdit("");
-    setDisplayEditForm(false);
-    // setDisplayTodoForm(true);
-    console.log(edit);
   };
 
   const cancelEditForm = () => {
@@ -55,7 +64,6 @@ export const TaskDashboard = () => {
 
   const handleCheck = async(id:string) => {
        await checkTaskBox(id)
-      //  setIsChecked(!isChecked)
   }
 
   const handleLogOut = () => {
@@ -64,18 +72,21 @@ export const TaskDashboard = () => {
   }
 
   return (
-    <div className="pb-10">
+    <div className="pb-10 bg-cover h-screen relative py-14"
+     style={{ backgroundImage: `url(${backGroundImage})` }}
+    
+    >
       <button
-        className="text-white  w-[100px] bg-red-900 px-5 py-2 capitalize rounded cursor-pointer mt-3 ml-5"
+        className="text-white  w-[100px] bg-red-900 px-5 py-2 capitalize rounded cursor-pointer  ml-5 absolute md:top-[25px] top-[15px] right-5"
         onClick={handleLogOut}
         >
           log out
         </button>
 
-      <p className="text-red-900 uppercase text-center mt-5 font-bold text-[30px] ">
+      <p className="text-red-900 uppercase text-center font-bold text-[30px] w-fit m-auto ">
         Task manager
       </p>
-      {error && <p className="text-[20px] text-red-500">{error}</p>}
+      {/* {error && <p className="text-[20px] text-red-500">{error}</p>} */}
       <div className="sm:w-[50%] mx-5 sm:mx-0 md:m-auto  mt-5 flex justify-between">
         <button
           className=" text-white bg-red-900 px-5 py-2 rounded cursor-pointer"
@@ -114,7 +125,6 @@ export const TaskDashboard = () => {
           <p className="capitalize font-bold ">
             task todo: <span className="text-red-900 font-bold">{count}</span>{" "}
           </p>
-          <ul className="">
             {filteredTasks.map((task) => (
               <div className="flex justify-between mt-2 pb-3">
                 <li key={task._id} className="flex gap-x-3">
@@ -140,36 +150,38 @@ export const TaskDashboard = () => {
                 </div>
               </div>
             ))}
-            {displayEditForm && (
-              <form
-                action=""
-                className=" md:w-[50%] w-[100%] pb-5"
-                onSubmit={handleEditForm}
-              >
-                <input
-                  type="text"
-                  className="border bg-white w-[60%] rounded outline-none py-1 px-2"
-                  value={edit}
-                  onChange={(e) => setEdit(e.target.value)}
-                />
-                <div className="flex gap-x-4 mt-3 mb-3">
-                  <button
-                    type="submit"
-                    className="text-white bg-red-900 px-5 py-2 rounded cursor-pointer"
-                  >
-                    save
-                  </button>
-                  <button
-                    type="button"
-                    className="text-white bg-red-900 px-5 py-2 rounded cursor-pointer"
-                    onClick={cancelEditForm}
-                  >
-                    cancel
-                  </button>
-                </div>
-              </form>
-            )}
-          </ul>
+            <div className="flex flex-col">
+              {displayEditForm && (
+                <form
+                  action=""
+                  className=" md:w-[50%] w-[100%] pb-5"
+                  onSubmit={handleEditForm}
+                >
+                  <input
+                    type="text"
+                    className="border bg-white w-[60%] rounded outline-none py-1 px-2"
+                    value={edit}
+                    onChange={(e) => setEdit(e.target.value)}
+                  />
+                  {error && <p className="text-red-900">{error}</p>}
+                  <div className="flex gap-x-4 mt-3 mb-3">
+                    <button
+                      type="submit"
+                      className="text-white bg-red-900 px-5 py-2 rounded cursor-pointer"
+                    >
+                      update
+                    </button>
+                    <button
+                      type="button"
+                      className="text-white bg-red-900 px-5 py-2 rounded cursor-pointer"
+                      onClick={cancelEditForm}
+                    >
+                      cancel
+                    </button>
+                  </div>
+                </form>
+              )}
+            </div>
         </div>
       )}
     </div>

@@ -33,13 +33,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setLoading(true);
         setError(null);
         if (!email.includes("@") || !email.includes(".")) {
-          setError("Invalid email format");
+          setLoading(false)
+          throw new Error("Invalid email format");
         }
         if (password.length < 6) {
-          setError("Password must be at least 6 characters");
+          setLoading(false)
+          throw new Error("Password must be at least 6 characters");
         }
         if (!username.trim()) {
-          setError("Username is required");
+          setLoading(false)
+          throw new Error("Username is required");
         }
         const URL: string = import.meta.env.VITE_SERVER_URL;
         const body = { username, password, email };
@@ -67,6 +70,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const errorMessage =
           error.response.data.msg || "something went wrong try later!";
         setError(errorMessage);
+        throw new Error(errorMessage)
       } finally {
         setLoading(false);
       }
@@ -81,6 +85,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     //   setEmail('')
       setLoading(true);
       setError(null);
+        if (!email.includes("@") || !email.includes(".")) {
+          setLoading(false)
+          throw new Error("Invalid email format");
+        }
+        if (password.length < 6) {
+          setLoading(false)
+          throw new Error("Password must be at least 6 characters");
+        }
       const URL: string = import.meta.env.VITE_SERVER_URL;
       const body = { password, email };
       const config = {
@@ -94,6 +106,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         config
       );
       const data = response.data;
+      setUserName(data.user.username)      
       const {token} = data
     //   setToken(token)
       localStorage.setItem('authToken', token)
@@ -102,6 +115,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.error(error);
       const errorMessage = error.response.data?.msg || 'something went wrong, try again'
       setError(errorMessage)
+      throw new Error(errorMessage)
     } finally {
       setLoading(false);
     }

@@ -10,7 +10,7 @@ interface todoFormProps {
 
 const AddTodoForm: React.FC<todoFormProps> = ({ setDisplayTodoForm }) => {
     const{createTask, state:{error}} = UseTaskContext()
-    const{loading, setLoading} = useAuthContext()
+    const{loading, setLoading, username} = useAuthContext()
     const[content, setContent] = useState('')
     const[clientError, setClientError] = useState('')
 
@@ -38,8 +38,8 @@ const AddTodoForm: React.FC<todoFormProps> = ({ setDisplayTodoForm }) => {
 
   return (
     <>
-    <div className='md:w-[50%] mx-5 sm:mx-0 md:m-auto bg-[#CCCDDE] rounded mt-5 md:mt-5 space-y-3 p-5 pb-10 '>
-        <p className='text-red-900 text-[20px] font-bold capitalize'>add todo</p>
+    <div className='md:w-[50%] mx-5 sm:mx-0 md:m-auto bg-[#CCCDDE] rounded mt-20 md:mt-5 space-y-3 p-5 pb-10 '>
+        <p className='text-red-900 text-[20px] font-bold capitalize'>add todo {`${username}`}</p>
         <form action="" className='' onSubmit={handleSubmit}>
             <input 
                 type="text" 
