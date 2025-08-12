@@ -103,7 +103,7 @@ export const TaskDashboard = () => {
           id=""
           value={filterState}
           onChange={handleFilterChange}
-          className="border text-white bg-red-900 px-5 py-2 rounded"
+          className="text-white bg-red-900 px-5 py-2 rounded"
         >
           <option value="all">all</option>
           <option value="incomplete">incomplete</option>
@@ -130,7 +130,7 @@ export const TaskDashboard = () => {
             task todo: <span className="text-red-900 font-bold">{count}</span>{" "}
           </p>
             {filteredTasks.map((task) => (
-              <div className="flex justify-between mt-2 pb-3">
+              <div className="flex justify-between mt-2 pb-3" >
                 <li key={task._id} className="flex gap-x-3">
                   <input type="checkbox" 
                    checked={task.completed}

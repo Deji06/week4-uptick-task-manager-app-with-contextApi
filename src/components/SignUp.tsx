@@ -23,8 +23,7 @@ const SignUp = () => {
     signUp,
     signUpError,
     setSignUpError,
-    // error,
-    // setError,
+    
     loading,
     setLoading,
   } = useAuthContext();
