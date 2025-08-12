@@ -5,8 +5,7 @@ import { CiEdit } from "react-icons/ci";
 import { MdDeleteOutline } from "react-icons/md";
 import { useNavigate } from "react-router-dom";
 import backGroundImage from '../assets/images/pexels-thepaintedsquare-3361492.jpg'
-
-// import { useAuthContext } from '../hooks/authContextHook'
+import { useAuthContext } from '../hooks/authContextHook'
 
 interface TaskTypes {
   _id: string;
@@ -21,10 +20,14 @@ export const TaskDashboard = () => {
   const [displayEditForm, setDisplayEditForm] = useState<boolean>(false);
   const [edit, setEdit] = useState<string>("");
   const [currentTask, setCurrentTask] = useState<TaskTypes | null>(null);
-  // const[isChecked, setIsChecked] = useState(false)
 
-  const { updateTask, deleteTask, state: { error, loading, tasks, count, filterState, filteredTasks}, checkTaskBox, setFilterState , logOut} = UseTaskContext();
-  //    const {username} = useAuthContext()
+  const { updateTask,
+     deleteTask, 
+     state: { updateTaskError, loading, tasks, count, filterState, filteredTasks}, 
+     checkTaskBox, 
+     setFilterState , 
+     resetTaskState} = UseTaskContext();
+    const {logOut} = useAuthContext()
 
   const handleEdit = (task: TaskTypes) => {
     setDisplayEditForm(!displayEditForm);
@@ -37,8 +40,8 @@ export const TaskDashboard = () => {
     e.preventDefault();
     try {
       if (currentTask) {
-        await updateTask(edit, currentTask?._id);
-        if(!error) {
+        const success = await updateTask(edit, currentTask?._id);
+        if(success) {
           console.log(`Updated task with new content: ${edit}`);
           setCurrentTask(null);
           setEdit("");
@@ -68,11 +71,12 @@ export const TaskDashboard = () => {
 
   const handleLogOut = () => {
     logOut()
+    resetTaskState()
     navigate('/login')
   }
 
   return (
-    <div className="pb-10 bg-cover h-screen relative py-14"
+    <div className="pb-20 bg-cover min-h-screen relative py-14 md:py-10"
      style={{ backgroundImage: `url(${backGroundImage})` }}
     
     >
@@ -121,7 +125,7 @@ export const TaskDashboard = () => {
       )}
 
       {tasks.length !== 0 && (
-        <div className="sm:w-[50%] mt-10 mx-5 sm:mx-0 md:m-auto  md:mt-10 rounded bg-[#CCCDDE] px-5 md:mb-5">
+        <div className="sm:w-[50%] mt-10 mx-5 sm:mx-0 md:m-auto h-full md:mt-10 rounded bg-[#CCCDDE] px-5 md:mb-10 ">
           <p className="capitalize font-bold ">
             task todo: <span className="text-red-900 font-bold">{count}</span>{" "}
           </p>
@@ -163,7 +167,7 @@ export const TaskDashboard = () => {
                     value={edit}
                     onChange={(e) => setEdit(e.target.value)}
                   />
-                  {error && <p className="text-red-900">{error}</p>}
+                  {updateTaskError && <p className="text-red-500">{updateTaskError}</p>}
                   <div className="flex gap-x-4 mt-3 mb-3">
                     <button
                       type="submit"

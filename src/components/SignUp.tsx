@@ -21,8 +21,10 @@ const SignUp = () => {
     username,
     setUserName,
     signUp,
-    error,
-    setError,
+    signUpError,
+    setSignUpError,
+    // error,
+    // setError,
     loading,
     setLoading,
   } = useAuthContext();
@@ -51,25 +53,27 @@ const SignUp = () => {
     setUserError(errors);
 
     if (!isvalid) {
-      setError(errors.username || errors.email || errors.password);
+      setSignUpError(errors.username || errors.email || errors.password);
     }
     return isvalid;
   };
 
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
+    setSignUpError(null);
 
     if (!validateForm()) return;
     setLoading(false);
 
     try {
       setLoading(true);
-      await signUp(username, formData.email, formData.password);
-      setUserName("");
+    const success =  await signUp(username, formData.email, formData.password);
+    if(success) {
+      setUserName(""); 
       navigate("/login");
-      setError("");
+      setSignUpError("");
       setFormData({ email: "", password: "" });
+    }
     } catch (error) {
       console.error(error);
     } finally {
@@ -204,11 +208,11 @@ const SignUp = () => {
 
                 </div>
 
-                {error &&
+                {signUpError &&
                   !userError.username &&
                   !userError.email &&
                   !userError.password && (
-                    <p className="text-red-900">{error}</p>
+                    <p className="text-red-900">{signUpError}</p>
                   )}
 
                 <div className="flex items-center justify-evenly">

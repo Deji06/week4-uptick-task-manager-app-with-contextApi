@@ -13,7 +13,7 @@ import { IoMdEyeOff } from "react-icons/io";
 const Login = () => {
   const navigate = useNavigate();
   const { fetchAllTasks } = UseTaskContext();
-  const { error, login, setError, loading, setLoading } = useAuthContext();
+  const { logInError, login, setLogInError, loading, setLoading } = useAuthContext();
   const [formData, setFormData] = useState({ password: "", email: "" });
   const [userError, setUserError] = useState({ email: "", password: "" });
   const[eyeMonitor, setEyeMonitor] = useState(false)
@@ -31,7 +31,7 @@ const Login = () => {
     }
     setUserError(errors);
     if (!isValid) {
-      setError(errors.email || errors.password);
+      setLogInError(errors.email || errors.password);
     }
 
     return isValid;
@@ -39,12 +39,14 @@ const Login = () => {
   const handleFormSubmit = async (e: React.FormEvent) => {
     if (!validateForm()) return;
     e.preventDefault();
-    setError(null);
+    setLogInError(null);
     setLoading(false);
     try {
-      await login(formData.email, formData.password);
+    const success =  await login(formData.email, formData.password);
+    if(success) {
       navigate("/TaskDashboard");
       fetchAllTasks();
+    }
     } catch (error) {
       console.log(error);
     } finally {
@@ -123,8 +125,8 @@ const Login = () => {
 
 
                 </div>
-                {error && !userError.email && !userError.password && (
-                  <p className="text-red-900">{error}</p>
+                {logInError && !userError.email && !userError.password && (
+                  <p className="text-red-900">{logInError}</p>
                 )}
                  <div className="flex items-center justify-evenly">
                   <button

@@ -9,7 +9,7 @@ interface todoFormProps {
 
 
 const AddTodoForm: React.FC<todoFormProps> = ({ setDisplayTodoForm }) => {
-    const{createTask, state:{error}} = UseTaskContext()
+    const{createTask, state:{createTaskError}} = UseTaskContext()
     const{loading, setLoading, username} = useAuthContext()
     const[content, setContent] = useState('')
     const[clientError, setClientError] = useState('')
@@ -39,7 +39,7 @@ const AddTodoForm: React.FC<todoFormProps> = ({ setDisplayTodoForm }) => {
   return (
     <>
     <div className='md:w-[50%] mx-5 sm:mx-0 md:m-auto bg-[#CCCDDE] rounded mt-20 md:mt-5 space-y-3 p-5 pb-10 '>
-        <p className='text-red-900 text-[20px] font-bold capitalize'>add todo {`${username}`}</p>
+        <p className='text-red-900 text-[20px] font-bold capitalize'>welcome {`${username}`}! add todos for today</p>
         <form action="" className='' onSubmit={handleSubmit}>
             <input 
                 type="text" 
@@ -49,7 +49,7 @@ const AddTodoForm: React.FC<todoFormProps> = ({ setDisplayTodoForm }) => {
                 onChange={(e)=> setContent(e.target.value)}
             />
             {clientError? <p className='text-red-500'>{clientError}</p>: ''}
-            {error && <p className="text-red-500">{error}</p>}
+            {createTaskError && <p className="text-red-500">{createTaskError}</p>}
             <div className='mt-2 flex justify-between md:w-[60%]'>
                 <button type='submit' className=' text-white bg-red-900 px-5 py-2 capitalize rounded cursor-pointer'>{
                      loading? 'adding task....' : 'add task'

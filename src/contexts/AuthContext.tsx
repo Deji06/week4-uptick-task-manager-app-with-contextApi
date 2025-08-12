@@ -1,18 +1,19 @@
 import axios from "axios";
-import { createContext, useState, type ReactNode, useCallback } from "react";
+import { createContext, useState, type ReactNode, useCallback , useEffect} from "react";
 
 interface AuthContextType {
   username: string;
   loading: boolean;
-  error: string | null;
+  logInError: string | null;
+  signUpError: string | null;
   setUserName: (username: string) => void;
-//   setEmail: (email: string) => void;
-//   setPassword: (password: string) => void;
-//  setToken : (token:string) => void;
   setLoading: (loading: boolean) => void;
-  setError: (error: string | null) => void;
-  signUp: (username: string, email: string, password: string) => Promise<void>;
-  login: (email: string, password: string) => Promise<void>;
+  setLogInError: (error: string | null) => void;
+  setSignUpError: (error: string | null) => void;
+  signUp: (username: string, email: string, password: string) => Promise<boolean>;
+  login: (email: string, password: string) => Promise<boolean>;
+  logOut: () => void;
+
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(
@@ -20,29 +21,46 @@ export const AuthContext = createContext<AuthContextType | undefined>(
 );
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [username, setUserName] = useState<string>("");
-//   const [token, setToken] = useState<string> ('')
-//   const [email, setEmail] = useState<string>("");
-//   const [password, setPassword] = useState<string>("");
+  const [username, setUserName] = useState<string>(localStorage.getItem('username') || '');
   const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
+  const [signUpError, setSignUpError] = useState<string | null>(null);
+  const [logInError, setLogInError] = useState<string | null>(null);
+
+   useEffect(() => {
+    const savedUsername = localStorage.getItem("username");
+    if (savedUsername) {
+      setUserName(savedUsername);
+    }
+  }, []);
+
+  const logOut = useCallback(() => {
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("regToken");
+    localStorage.removeItem("username");
+    setUserName('')
+    console.log("all authentications and user info cleared");
+    
+  }, []);
 
   const signUp = useCallback(
     async (username: string, email: string, password: string) => {
       try {
         setLoading(true);
-        setError(null);
+        setSignUpError(null);
         if (!email.includes("@") || !email.includes(".")) {
           setLoading(false)
-          throw new Error("Invalid email format");
+          setSignUpError("Invalid email format");
+          return false;
         }
         if (password.length < 6) {
           setLoading(false)
-          throw new Error("Password must be at least 6 characters");
+          setSignUpError("Password must be at least 6 characters");
+          return false
         }
         if (!username.trim()) {
           setLoading(false)
-          throw new Error("Username is required");
+          setSignUpError("Username is required");
+          return false;
         }
         const URL: string = import.meta.env.VITE_SERVER_URL;
         const body = { username, password, email };
@@ -62,15 +80,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUserName(data.user?.name)
         console.log("data:", data);
         console.log("data:", token);
-        // setEmail('')
         setUserName('')
-        // setPassword('')
+        return true;
       } catch (error: any) {
         console.log(error);
         const errorMessage =
           error.response.data.msg || "something went wrong try later!";
-        setError(errorMessage);
-        throw new Error(errorMessage)
+        setSignUpError(errorMessage);
+        return false;
+        // throw new Error(errorMessage)
       } finally {
         setLoading(false);
       }
@@ -84,14 +102,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
     //   setEmail('')
       setLoading(true);
-      setError(null);
+      setLogInError(null);
         if (!email.includes("@") || !email.includes(".")) {
           setLoading(false)
-          throw new Error("Invalid email format");
+          setLogInError("Invalid email format");
+          return false;
         }
         if (password.length < 6) {
           setLoading(false)
-          throw new Error("Password must be at least 6 characters");
+          setLogInError("Password must be at least 6 characters");
         }
       const URL: string = import.meta.env.VITE_SERVER_URL;
       const body = { password, email };
@@ -106,16 +125,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         config
       );
       const data = response.data;
-      setUserName(data.user.username)      
       const {token} = data
-    //   setToken(token)
       localStorage.setItem('authToken', token)
+      localStorage.setItem("username", data.user?.username);
+      setUserName(data.user?.username)      
       console.log("data:", data);
+      return true;
     } catch (error:any) {
       console.error(error);
       const errorMessage = error.response.data?.msg || 'something went wrong, try again'
-      setError(errorMessage)
-      throw new Error(errorMessage)
+      setLogInError(errorMessage)
+      return false;
+      // throw new Error(errorMessage)
     } finally {
       setLoading(false);
     }
@@ -125,15 +146,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     <AuthContext.Provider
       value={{
         username,
-        // token,
-        // setToken,
-        // password,
-        // email,
         setUserName,
-        // setPassword,
-        // setEmail,
-        error,
-        setError,
+        logInError,
+        signUpError,
+        setLogInError,
+        setSignUpError,
+        logOut,
         loading,
         setLoading,
         signUp,
