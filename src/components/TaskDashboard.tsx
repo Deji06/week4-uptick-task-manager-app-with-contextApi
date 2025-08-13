@@ -59,6 +59,8 @@ export const TaskDashboard = () => {
 
   const cancelEditForm = () => {
     setDisplayEditForm(false);
+    setCurrentTask(null)
+    setEdit('')
   };
 
   const handleFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -99,36 +101,37 @@ export const TaskDashboard = () => {
           add task
         </button>
         <select
-          name=""
-          id=""
           value={filterState}
           onChange={handleFilterChange}
-          className="text-white bg-red-900 px-5 py-2 rounded"
+          className="text-white bg-red-900 px-5 py-2 rounded cursor-pointer"
         >
           <option value="all">all</option>
           <option value="incomplete">incomplete</option>
           <option value="completed">completed</option>
         </select>
       </div>
-      {displayTodoForm ? (
-        <AddTodoForm
+      {displayTodoForm && <AddTodoForm
           displayTodoForm={displayTodoForm}
           setDisplayTodoForm={setDisplayTodoForm}
         />
-      ) : (
-        ""
-      )}
+      }
       {loading && (
         <p className="text-red-900 text-center text-[20px] capitalize">
           loading all tasks....
         </p>
       )}
 
-      {tasks.length !== 0 && (
+      {tasks.length > 0 && (
         <div className="sm:w-[50%] mt-10 mx-5 sm:mx-0 md:m-auto h-full md:mt-10 rounded bg-[#CCCDDE] px-5 md:mb-10 ">
-          <p className="capitalize font-bold ">
-            task todo: <span className="text-red-900 font-bold">{count}</span>{" "}
-          </p>
+          <div className="flex justify-between py-2">
+            <p className="capitalize font-bold ">
+              total tasks: <span className="text-red-900 font-bold">{count}</span>{" "}
+            </p>
+            <p className="capitalize font-bold ">
+              tasks to do: <span className="text-red-900 ">{tasks.filter(task=>!task.completed).length}</span>
+            </p>
+
+          </div>
             {filteredTasks.map((task) => (
               <div className="flex justify-between mt-2 pb-3" >
                 <li key={task._id} className="flex gap-x-3">

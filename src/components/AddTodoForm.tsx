@@ -52,7 +52,7 @@ const AddTodoForm: React.FC<todoFormProps> = ({ setDisplayTodoForm }) => {
             {createTaskError && <p className="text-red-500">{createTaskError}</p>}
             <div className='mt-2 flex justify-between md:w-[60%]'>
                 <button type='submit' className=' text-white bg-red-900 px-5 py-2 capitalize rounded cursor-pointer'>{
-                     loading? 'adding task....' : 'add task'
+                     loading? 'adding task....' : 'add task' 
                     }
                 </button>
                 <button 

@@ -1,5 +1,12 @@
 import axios from "axios";
-import { useContext, createContext, type ReactNode, useState, useCallback, useEffect} from "react";
+import {
+  useContext,
+  createContext,
+  type ReactNode,
+  useState,
+  useCallback,
+  useEffect,
+} from "react";
 // single task created data
 interface TaskTypes {
   _id: string;
@@ -46,8 +53,8 @@ export const TaskProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [count, setCount] = useState<number>(0);
-  const[createTaskError, setCreateTaskError] = useState<string | null>(null)
-  const[updateTaskError, setUpdateTaskError] = useState<string | null>(null)
+  const [createTaskError, setCreateTaskError] = useState<string | null>(null);
+  const [updateTaskError, setUpdateTaskError] = useState<string | null>(null);
   //combined states structure
   const state: TaskState = {
     tasks,
@@ -66,7 +73,7 @@ export const TaskProvider = ({ children }: { children: ReactNode }) => {
     setFilterState("all");
     setLoading(false);
     setError(null);
-    setCreateTaskError('')
+    setCreateTaskError("");
     setCount(0);
     console.log("task related info cleared");
   }, []);
@@ -133,7 +140,7 @@ export const TaskProvider = ({ children }: { children: ReactNode }) => {
     setCreateTaskError(null);
     if (content.trim() === "") {
       setCreateTaskError("content cannot be empty");
-      setLoading(false)
+      setLoading(false);
       return false;
     }
     try {
@@ -175,7 +182,7 @@ export const TaskProvider = ({ children }: { children: ReactNode }) => {
         errorMessage = "failed to create task";
       }
       setCreateTaskError(errorMessage);
-      return false
+      return false;
     } finally {
       setLoading(false);
     }
@@ -186,7 +193,7 @@ export const TaskProvider = ({ children }: { children: ReactNode }) => {
     setUpdateTaskError(null);
     if (content.trim() === "") {
       setUpdateTaskError("task cannot be empty");
-      setLoading(false)
+      setLoading(false);
       return false;
     }
     try {
@@ -230,7 +237,7 @@ export const TaskProvider = ({ children }: { children: ReactNode }) => {
         errorMessage = "Failed to update task.";
       }
       setUpdateTaskError(errorMessage);
-      return false
+      return false;
     } finally {
       setLoading(false);
     }
@@ -245,7 +252,7 @@ export const TaskProvider = ({ children }: { children: ReactNode }) => {
       if (!token) {
         setError("token missing, cannot delete task");
         setLoading(false);
-        return ;
+        return;
       }
       const config = {
         headers: {
@@ -263,15 +270,16 @@ export const TaskProvider = ({ children }: { children: ReactNode }) => {
     } catch (error: any) {
       console.error(error);
       let errorMessage: string;
-      if(error.code === 'ERR_NETWORK'){
-        errorMessage = 'Failed to connect with server, check internet connection !!'
-      }else if(error.response && error.respnse.status === 404) {
-        errorMessage =  "task not found"
-      }else if(error.response && error.response.data.msg) {
-        errorMessage = error.response.data.msg
-      }else{
-        errorMessage = 'Failed to delete task'
-      } 
+      if (error.code === "ERR_NETWORK") {
+        errorMessage =
+          "Failed to connect with server, check internet connection !!";
+      } else if (error.response && error.respnse.status === 404) {
+        errorMessage = "task not found";
+      } else if (error.response && error.response.data.msg) {
+        errorMessage = error.response.data.msg;
+      } else {
+        errorMessage = "Failed to delete task";
+      }
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -280,9 +288,14 @@ export const TaskProvider = ({ children }: { children: ReactNode }) => {
 
   const checkTaskBox = useCallback(
     async (id: string) => {
+      setLoading(true);
+      setError(null);
       try {
         const taskToUpdate = tasks.find((task) => task._id === id);
-        if (!taskToUpdate) return;
+        if (!taskToUpdate) {
+          setLoading(false);
+          return;
+        }
         const URL = import.meta.env.VITE_SERVER_URL;
         const token = localStorage.getItem("authToken");
         if (!token) {
@@ -290,6 +303,11 @@ export const TaskProvider = ({ children }: { children: ReactNode }) => {
           setLoading(false);
           return;
         }
+        setTasks((prevTasks) =>
+          prevTasks.map((task) =>
+            task._id === id ? { ...task, completed: !task.completed } : task
+          )
+        );
         const body = { completed: !taskToUpdate.completed };
         const config = {
           headers: {
@@ -303,15 +321,29 @@ export const TaskProvider = ({ children }: { children: ReactNode }) => {
           config
         );
         console.log("taskchecker:", response);
-
-        setTasks((prevTask) =>
-          prevTask.map((task) =>
-            task._id === id ? response.data.updateTask : task
-          )
-        );
       } catch (error: any) {
         console.error(error);
+        setTasks((prevTasks) =>
+          prevTasks.map((task) =>
+            task._id === id ? { ...task, completed: !task.completed } : task
+          )
+        );
+          console.error(error);
+      let errorMessage: string;
+      if (error.code === "ERR_NETWORK") {
+        errorMessage =
+          "Failed to connect with server, check internet connection !!";
+      } else if (error.response && error.respnse.status === 404) {
+        errorMessage = "tasks not found";
+      } else if (error.response && error.response.data.msg) {
+        errorMessage = error.response.data.msg;
+      } else {
+        errorMessage = "Failed to filter task";
+      }
+      setError(errorMessage);
         setError("Failed to update task completion status.");
+      } finally {
+        setLoading(false);
       }
     },
     [tasks]
